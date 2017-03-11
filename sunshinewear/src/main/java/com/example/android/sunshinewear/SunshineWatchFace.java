@@ -123,6 +123,15 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
                 invalidate();
             }
         };
+
+        final BroadcastReceiver mWeatherChangedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.hasExtra("max")){
+
+                }
+            }
+        };
         float mXOffset;
         float mYOffset;
 

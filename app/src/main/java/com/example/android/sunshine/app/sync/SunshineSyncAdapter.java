@@ -425,7 +425,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
         Log.i("update wear max temp", formattedMaxTemperature);
 
         final PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/weather").setUrgent();
+
         putDataMapReq.getDataMap().putString(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,formattedMaxTemperature);
+
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult =
                 Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);

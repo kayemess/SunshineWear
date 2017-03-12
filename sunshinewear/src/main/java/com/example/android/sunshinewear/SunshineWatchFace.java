@@ -28,6 +28,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -39,6 +40,7 @@ import android.view.WindowInsets;
 import android.widget.Toast;
 
 import com.example.android.app.R;
+import com.example.android.app.Utility;
 import com.example.android.app.WeatherWearableListenerService;
 import com.google.android.gms.wearable.WearableListenerService;
 
@@ -59,6 +61,11 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
     private static final Typeface BOLD_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
+
+    private String mHighTemp;
+    private String mLowTemp;
+
+    private int mWeatherId;
 
 
     /**
@@ -115,6 +122,7 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
 
         Paint mHighTempPaint;
         Paint mLowTempPaint;
+        Paint mWeatherIconPaint;
 
         boolean mAmbient;
         Calendar mCalendar;
@@ -135,10 +143,9 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             public void onReceive(Context context, Intent intent) {
                 Log.i("watchface", "onReceive called");
 
-                if(intent.hasExtra("max")){
-                    Toast.makeText(getApplicationContext(), intent.getStringExtra("max"), Toast.LENGTH_SHORT)
-                            .show();
-                }
+                mHighTemp = intent.getStringExtra("max");
+                mLowTemp = intent.getStringExtra("min");
+                mWeatherId = intent.getIntExtra("weather_id", -1);
             }
         };
         float mXOffset;
@@ -163,7 +170,7 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
                     .setShowSystemUiTime(false)
-                    .setAcceptsTapEvents(true)
+                    .setAcceptsTapEvents(false)
                     .build());
             mResources = SunshineWatchFace.this.getResources();
 
@@ -186,12 +193,14 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
 
             mDatePaint = createTextPaint(mResources.getColor(R.color.colorPrimaryLight));
 
-            mHighTempPaint = createTextPaint(mResources.getColor(R.color.digital_text));
+            mHighTempPaint = createTextPaint(mResources.getColor(R.color.digital_text), BOLD_TYPEFACE);
             mLowTempPaint = createTextPaint(mResources.getColor(R.color.colorPrimaryLight));
 
             mLinePaint = createTextPaint(mResources.getColor(R.color.colorPrimaryLight));
 
             mCalendar = Calendar.getInstance();
+
+            mWeatherIconPaint = new Paint();
 
             mSimpleDateFormat = new SimpleDateFormat("EEE, MMM d yyyy");
             mSimpleDateFormat.setTimeZone(mCalendar.getTimeZone());
@@ -293,10 +302,11 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             mColonPaint.setTextSize(textSize);
             mDatePaint.setTextSize(22);
 
-            mHighTempPaint.setTextSize(26);
-            mLowTempPaint.setTextSize(26);
+            mHighTempPaint.setTextSize(30);
+            mLowTempPaint.setTextSize(30);
 
             mLinePaint.setStrokeWidth(0);
+
         }
 
         @Override
@@ -331,29 +341,6 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             // Whether the timer should be running depends on whether we're visible (as well as
             // whether we're in ambient mode), so we may need to start or stop the timer.
             updateTimer();
-        }
-
-        /**
-         * Captures tap event (and tap type) and toggles the background color if the user finishes
-         * a tap.
-         */
-        @Override
-        public void onTapCommand(int tapType, int x, int y, long eventTime) {
-            switch (tapType) {
-                case TAP_TYPE_TOUCH:
-                    // The user has started touching the screen.
-                    break;
-                case TAP_TYPE_TOUCH_CANCEL:
-                    // The user has started a different gesture or otherwise cancelled the tap.
-                    break;
-                case TAP_TYPE_TAP:
-                    // The user has completed the tap gesture.
-                    // TODO: Add code to handle the tap gesture.
-                    Toast.makeText(getApplicationContext(), R.string.message, Toast.LENGTH_SHORT)
-                            .show();
-                    break;
-            }
-            invalidate();
         }
 
         private String formatTwoDigitNumber(int hour) {
@@ -413,7 +400,34 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
 
             canvas.drawLine(x - 40, y, x + 40, y, mLinePaint);
 
-            y += 15;
+            y += 50;
+
+            float yBitmap = y - 40;
+
+            if(mHighTemp != null && mLowTemp != null){
+                if(mWeatherId < 0)
+                    mWeatherId = 800;
+
+                Bitmap weatherArt = BitmapFactory.decodeResource(getResources(), Utility.getArtResourceForWeatherCondition(mWeatherId));
+                int scale = 60;
+                Bitmap weatherScaled = Bitmap.createScaledBitmap(weatherArt,scale,scale,true);
+
+                float xWeatherWidth = scale + 15 + mHighTempPaint.measureText(mHighTemp) + 10 + mLowTempPaint.measureText(mLowTemp);
+                x = (xCanvasWidth - xWeatherWidth) / 2;
+
+                canvas.drawBitmap(weatherScaled,x,yBitmap,mWeatherIconPaint);
+
+                x += scale + 10;
+
+                canvas.drawText(mHighTemp,x,y,mHighTempPaint);
+
+                x += mHighTempPaint.measureText(mHighTemp) + 5;
+
+                canvas.drawText(mLowTemp, x,y,mLowTempPaint);
+
+
+
+            }
         }
 
         /**

@@ -66,10 +66,11 @@ public class WeatherWearableListenerService extends WearableListenerService impl
                     DataItem item = dataEvent.getDataItem();
 
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    String maxTemp = dataMap.getString("max");
 
                     Intent weatherChanged = new Intent("ACTION_WEATHER_CHANGED");
-                    weatherChanged.putExtra("max", maxTemp);
+                    weatherChanged.putExtra("max", dataMap.getString("max"));
+                    weatherChanged.putExtra("min", dataMap.getString("min"));
+                    weatherChanged.putExtra("weather_id", dataMap.getInt("weather_id"));
 
                     sendBroadcast(weatherChanged);
                 }

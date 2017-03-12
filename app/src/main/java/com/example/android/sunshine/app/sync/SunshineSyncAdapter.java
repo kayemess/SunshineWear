@@ -62,6 +62,7 @@ import java.net.URL;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
+import static android.R.attr.fingerprintAuthDrawable;
 import static android.R.attr.path;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -391,12 +392,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
         final String[] FORECAST_COLUMNS = {
                 WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
                 WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP
+                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
         };
         // these indices must match the projection
         final int INDEX_WEATHER_ID = 0;
         final int INDEX_SHORT_DESC = 1;
         final int INDEX_MAX_TEMP = 2;
+        final int INDEX_MIN_TEMP = 3;
 
         String location = Utility.getPreferredLocation(getContext());
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
@@ -413,8 +416,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
         // Extract the weather data from the Cursor
         int weatherId = data.getInt(INDEX_WEATHER_ID);
-        int weatherArtResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
-        String description = data.getString(INDEX_SHORT_DESC);
         double maxTemp = data.getDouble(INDEX_MAX_TEMP);
         String formattedMaxTemperature = Utility.formatTemperature(getContext(), maxTemp);
 
@@ -427,6 +428,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
         putDataMapReq.getDataMap().putLong("currentTimeMillis", System.currentTimeMillis());
         putDataMapReq.getDataMap().putString(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,formattedMaxTemperature);
+        putDataMapReq.getDataMap().putString(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,formattedMinTemperature);
+        putDataMapReq.getDataMap().putInt(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,weatherId);
 
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
 

@@ -34,13 +34,6 @@ public class WeatherWearableListenerService extends WearableListenerService impl
         GoogleApiClient.OnConnectionFailedListener,
         DataApi.DataListener {
 
-    private static final String TAG = "WearableDataLayer";
-    private static final String START_ACTIVITY_PATH = "/start-activity";
-    private static final String DATA_ITEM_RECEIVED_PATH = "/data-item-received";
-
-    public static final String WEATHER_DATA = "/weather";
-    public static final String MAX_TEMP = "max-temp";
-
     GoogleApiClient mGoogleApiClient;
 
     @Override
@@ -85,11 +78,12 @@ public class WeatherWearableListenerService extends WearableListenerService impl
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        // do nothing
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.i("WearableListenerService", String.valueOf(connectionResult));
+        mGoogleApiClient.connect(); // try to connect again
     }
 }

@@ -42,6 +42,7 @@ import android.widget.Toast;
 import com.example.android.app.R;
 import com.example.android.app.Utility;
 import com.example.android.app.WeatherWearableListenerService;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.WearableListenerService;
 
 import java.lang.ref.WeakReference;
@@ -108,7 +109,6 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
         boolean mRegisteredWeatherUpdateReceiver = false;
-        Paint mTextPaint;
 
         Paint mBackgroundPaint;
 
@@ -162,7 +162,6 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
         @Override
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
-            //android.os.Debug.waitForDebugger();
 
             WeatherWearableListenerService weatherListenerService = new WeatherWearableListenerService();
 
@@ -178,15 +177,13 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             initializeWatchFace();
         }
 
-        private void initializeBackground(){
+        private void initializeBackground() {
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(mResources.getColor(R.color.background));
         }
 
-        private void initializeWatchFace(){
+        private void initializeWatchFace() {
             mYOffset = mResources.getDimension(R.dimen.digital_y_offset);
-            //mTextPaint = new Paint();
-            //mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
             mHoursPaint = createTextPaint(mResources.getColor(R.color.digital_text), BOLD_TYPEFACE);
             mMinutesPaint = createTextPaint(mResources.getColor(R.color.digital_text));
             mColonPaint = createTextPaint(mResources.getColor(R.color.digital_text));
@@ -290,6 +287,8 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             // Load resources that have alternate values for round watches.
             Resources resources = SunshineWatchFace.this.getResources();
             boolean isRound = insets.isRound();
+            mYOffset = resources.getDimension(isRound
+                    ? R.dimen.digital_y_offset_round : R.dimen.digital_y_offset);
             mXOffset = resources.getDimension(isRound
                     ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
             float textSize = resources.getDimension(isRound
@@ -404,27 +403,26 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
 
             float yBitmap = y - 40;
 
-            if(mHighTemp != null && mLowTemp != null){
-                if(mWeatherId < 0)
+            if (mHighTemp != null && mLowTemp != null) {
+                if (mWeatherId < 0)
                     mWeatherId = 800;
 
                 Bitmap weatherArt = BitmapFactory.decodeResource(getResources(), Utility.getArtResourceForWeatherCondition(mWeatherId));
                 int scale = 60;
-                Bitmap weatherScaled = Bitmap.createScaledBitmap(weatherArt,scale,scale,true);
+                Bitmap weatherScaled = Bitmap.createScaledBitmap(weatherArt, scale, scale, true);
 
                 float xWeatherWidth = scale + 15 + mHighTempPaint.measureText(mHighTemp) + 10 + mLowTempPaint.measureText(mLowTemp);
                 x = (xCanvasWidth - xWeatherWidth) / 2;
 
-                canvas.drawBitmap(weatherScaled,x,yBitmap,mWeatherIconPaint);
+                canvas.drawBitmap(weatherScaled, x, yBitmap, mWeatherIconPaint);
 
                 x += scale + 10;
 
-                canvas.drawText(mHighTemp,x,y,mHighTempPaint);
+                canvas.drawText(mHighTemp, x, y, mHighTempPaint);
 
                 x += mHighTempPaint.measureText(mHighTemp) + 5;
 
-                canvas.drawText(mLowTemp, x,y,mLowTempPaint);
-
+                canvas.drawText(mLowTemp, x, y, mLowTempPaint);
 
 
             }

@@ -1,4 +1,4 @@
-package com.example.android.sunshinewear;
+package com.example.android.app;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -55,21 +55,25 @@ public class WeatherWearableListenerService extends WearableListenerService impl
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         Log.i("ListenerService", "OnDataChaged triggered");
-        final List<DataEvent> events = FreezableUtils
-                .freezeIterable(dataEvents);
 
         // Loop through the events and send a message
         // to the node that created the data item.
-        for (DataEvent event : events) {
-            DataItem item = event.getDataItem();
+        for (DataEvent dataEvent : dataEvents) {
 
-            DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-            String maxTemp = dataMap.getString("max");
+            if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
+                DataItem dataItem = dataEvent.getDataItem();
+                if (dataItem.getUri().getPath().equals("/wearable")) {
+                    DataItem item = dataEvent.getDataItem();
 
-            Intent weatherChanged = new Intent("ACTION_WEATHER_CHANGED");
-            weatherChanged.putExtra("max",maxTemp);
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    String maxTemp = dataMap.getString("max");
 
-            sendBroadcast(weatherChanged);
+                    Intent weatherChanged = new Intent("ACTION_WEATHER_CHANGED");
+                    weatherChanged.putExtra("max", maxTemp);
+
+                    sendBroadcast(weatherChanged);
+                }
+            }
         }
     }
 

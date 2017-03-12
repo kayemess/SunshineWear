@@ -420,15 +420,16 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
         double minTemp = data.getDouble(INDEX_MIN_TEMP);
         String formattedMinTemperature = Utility.formatTemperature(getContext(), minTemp);
-        data.close();
 
         Log.i("update wear max temp", formattedMaxTemperature);
 
-        final PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/weather").setUrgent();
+        final PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/wearable").setUrgent();
 
+        putDataMapReq.getDataMap().putLong("currentTimeMillis", System.currentTimeMillis());
         putDataMapReq.getDataMap().putString(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,formattedMaxTemperature);
 
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+
         PendingResult<DataApi.DataItemResult> pendingResult =
                 Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
 

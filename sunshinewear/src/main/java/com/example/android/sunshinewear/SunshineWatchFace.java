@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.sunshinewear;
+package com.example.android.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -36,6 +36,10 @@ import android.support.wearable.watchface.WatchFaceStyle;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 import android.widget.Toast;
+
+import com.example.android.app.R;
+import com.example.android.app.WeatherWearableListenerService;
+import com.google.android.gms.wearable.WearableListenerService;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -128,7 +132,8 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(intent.hasExtra("max")){
-
+                    Toast.makeText(getApplicationContext(), intent.getStringExtra("max"), Toast.LENGTH_SHORT)
+                            .show();
                 }
             }
         };
@@ -146,6 +151,9 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
         @Override
         public void onCreate(SurfaceHolder holder) {
             super.onCreate(holder);
+            //android.os.Debug.waitForDebugger();
+
+            WeatherWearableListenerService weatherListenerService = new WeatherWearableListenerService();
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(SunshineWatchFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_VARIABLE)

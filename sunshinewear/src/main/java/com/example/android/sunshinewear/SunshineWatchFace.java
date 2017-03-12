@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 import android.widget.Toast;
@@ -99,6 +100,7 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
     private class Engine extends CanvasWatchFaceService.Engine {
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
+        boolean mRegisteredWeatherUpdateReceiver = false;
         Paint mTextPaint;
 
         Paint mBackgroundPaint;
@@ -131,6 +133,8 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
         final BroadcastReceiver mWeatherChangedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.i("watchface", "onReceive called");
+
                 if(intent.hasExtra("max")){
                     Toast.makeText(getApplicationContext(), intent.getStringExtra("max"), Toast.LENGTH_SHORT)
                             .show();
@@ -220,13 +224,15 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             super.onVisibilityChanged(visible);
 
             if (visible) {
-                registerReceiver();
+                registerTimeZoneReceiver();
+                registerWeatherUpdateReceiver();
 
                 // Update time zone in case it changed while we weren't visible.
                 mCalendar.setTimeZone(TimeZone.getDefault());
                 invalidate();
             } else {
-                unregisterReceiver();
+                unregisterTimeZoneReceiver();
+                unregisterWeatherUpdateReceiver();
             }
 
             // Whether the timer should be running depends on whether we're visible (as well as
@@ -234,7 +240,7 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             updateTimer();
         }
 
-        private void registerReceiver() {
+        private void registerTimeZoneReceiver() {
             if (mRegisteredTimeZoneReceiver) {
                 return;
             }
@@ -243,12 +249,29 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             SunshineWatchFace.this.registerReceiver(mTimeZoneReceiver, filter);
         }
 
-        private void unregisterReceiver() {
+        private void registerWeatherUpdateReceiver() {
+            if (mRegisteredWeatherUpdateReceiver) {
+                return;
+            }
+            mRegisteredWeatherUpdateReceiver = true;
+            IntentFilter filter = new IntentFilter("ACTION_WEATHER_CHANGED");
+            SunshineWatchFace.this.registerReceiver(mWeatherChangedReceiver, filter);
+        }
+
+        private void unregisterTimeZoneReceiver() {
             if (!mRegisteredTimeZoneReceiver) {
                 return;
             }
             mRegisteredTimeZoneReceiver = false;
             SunshineWatchFace.this.unregisterReceiver(mTimeZoneReceiver);
+        }
+
+        private void unregisterWeatherUpdateReceiver() {
+            if (!mRegisteredWeatherUpdateReceiver) {
+                return;
+            }
+            mRegisteredWeatherUpdateReceiver = false;
+            SunshineWatchFace.this.unregisterReceiver(mWeatherChangedReceiver);
         }
 
         @Override
